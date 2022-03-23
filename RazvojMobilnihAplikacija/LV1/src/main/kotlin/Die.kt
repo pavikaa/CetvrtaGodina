@@ -1,0 +1,1 @@
+class Die(val value: Int) {}
