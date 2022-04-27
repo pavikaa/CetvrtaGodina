@@ -7,6 +7,7 @@ sift = cv2.SIFT_create(nfeatures=200)
 #ORB
 orb = cv2.ORB_create()
 
+#Funkcija vraća crvenu masku iz predane slike
 def redMask(hsvImg):
     #Iznosi boja u HSV obliku
     lowerRed1 = np.array([0, 70, 60])
@@ -27,6 +28,7 @@ def redMask(hsvImg):
     
     return mask
 
+#Funkcija vraća plavu masku iz predane slike
 def blueMask(hsvImg):
     lowerBlue = np.array([100, 170, 0])
     upperBlue = np.array([130, 255, 170])
@@ -40,7 +42,7 @@ def blueMask(hsvImg):
     
     return mask
 
-def getRedContours(mask,img):
+def getContours(mask,img):
     hh, ww = mask.shape[:2]
     shape = -1
     contours,hierarchy = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
@@ -69,35 +71,6 @@ def getRedContours(mask,img):
         return result
     else:
         return img.copy()
-    
-def getBlueContours(mask,img):
-    hh, ww = mask.shape[:2]
-    shape = -1
-    contours,hierarchy = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area>30000:
-            peri = cv2.arcLength(cnt,True)
-            approx = cv2.approxPolyDP(cnt,0.02*peri,True)
-            objCor = len(approx)
-            if objCor == 3:
-                shape = 3
-            elif objCor == 4:
-                shape = 4
-            elif objCor == 8:
-                shape = 0
- 
-    if shape!=-1:
-        mask = np.zeros((hh,ww), dtype=np.uint8)
-        cv2.drawContours(mask, [cnt], 0, (255,255,255), cv2.FILLED)
-        mask_inv = 255 - mask
-        bckgnd = np.full_like(img, (255,255,255))
-        image_masked = cv2.bitwise_and(img, img, mask=mask)
-        bckgnd_masked = cv2.bitwise_and(bckgnd, bckgnd, mask=mask_inv)
-        result = cv2.add(image_masked, bckgnd_masked)
-        return result
-    else:
-        return img
 
 def findDes(images,alg):
     desList=[]

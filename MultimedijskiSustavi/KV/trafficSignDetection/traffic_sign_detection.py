@@ -4,8 +4,10 @@ refImagesPath="ref_images"
 selImagesPath="selected_images"
 
 #Odabir algoritma, 1 za ORB, 2 za SIFT
-selectedAlgorithm=2
+selectedAlgorithm=1
+
 counter=0
+numberOfCorrectlyDetectedSigns=0
 
 selectedImages=[]
 selectedImagesNames=[]
@@ -23,12 +25,12 @@ for refImage in os.listdir(refImagesPath):
     classNames.append(os.path.splitext(refImage)[0])
 
 rows, cols = (len(refImages)+1, len(refImages)+1)
-arr=[]
+
 for i in range(rows):
     col = []
     for j in range(cols):
         col.append(0)
-    arr.append(col)
+    confusionMatrix.append(col)
     
 print('Broj referentnih znakova', len(refImages))
 print(classNames)
@@ -39,10 +41,12 @@ for selectedImage in selectedImages:
     imgBlur = cv2.GaussianBlur(selectedImage, (5, 5), 0)
     hsvImg = cv2.cvtColor(imgBlur, cv2.COLOR_BGR2HSV)
     
+    #Pretraživanje crvene boje, ukoliko je nema ili je zanemarive površine na slici prelazi se na plavu
+    
     #Crvena boja
     rMask = redMask(hsvImg)
     
-    imgRoiRed = getRedContours(rMask,selectedImage.copy())
+    imgRoiRed = getContours(rMask,selectedImage.copy())
     
     id = findID(imgRoiRed, desList, selectedAlgorithm)
     
@@ -52,27 +56,33 @@ for selectedImage in selectedImages:
     else:
     #Plava boja
        bMask = blueMask(hsvImg)
-       imgRoiBlue = getBlueContours(bMask,selectedImage.copy())
+       imgRoiBlue = getContours(bMask,selectedImage.copy())
        id = findID(imgRoiBlue, desList, selectedAlgorithm)
        if id != -1:
            print("Prepoznat je znak: " + classNames[id])
        else:
             print("Znak nije prepoznat ili ne postoji u bazi podataka!")
             
+    #Uvećavanje vrijednosti na odgovarajućim pozicijama u matrici konfuzije
     if id != -1:
-        arr[classNames.index(selectedImagesNames[counter])][id]+=1
+        confusionMatrix[classNames.index(selectedImagesNames[counter])][id]+=1
     else:
-        arr[classNames.index(selectedImagesNames[counter])][len(refImages)]+=1
+        confusionMatrix[classNames.index(selectedImagesNames[counter])][len(refImages)]+=1
         
-    print(selectedImagesNames[counter])
     counter+=1
         
     #cv2.imshow("Prepoznavanje znaka pomocu", selectedImage)
     #cv2.waitKey(200)
     #cv2.destroyAllWindows()
-numberOfCorrectlyDetectedSigns=0
+    
+
 classNames.append('random')
-for i in range(len(arr)):
-    numberOfCorrectlyDetectedSigns+=arr[i][i]
-    print(classNames[i] +" "+str(arr[i]))
+
+#Prebrojavanje točno detektiranih znakova
+for i in range(len(confusionMatrix)):
+    numberOfCorrectlyDetectedSigns+=confusionMatrix[i][i]
+    print(classNames[i] +" "+str(confusionMatrix[i]))
 print("Number of correctly detected signs is: " + str(numberOfCorrectlyDetectedSigns) + " out of : " + str(len(selectedImages)) +" signs.")
+
+#Spremanje matrice konfuzije u datoteku
+np.savetxt('confusionMatrix.csv', confusionMatrix, delimiter=',',fmt="%d")
