@@ -28,8 +28,8 @@ def redMask(hsvImg):
     return mask
 
 def blueMask(hsvImg):
-    lowerBlue = np.array([85, 130, 240])
-    upperBlue = np.array([180, 255, 255])
+    lowerBlue = np.array([100, 170, 0])
+    upperBlue = np.array([130, 255, 170])
     
     mask = cv2.inRange(hsvImg, lowerBlue, upperBlue)
     
@@ -68,7 +68,7 @@ def getRedContours(mask,img):
         result = cv2.add(image_masked, bckgnd_masked)
         return result
     else:
-        return img
+        return img.copy()
     
 def getBlueContours(mask,img):
     hh, ww = mask.shape[:2]

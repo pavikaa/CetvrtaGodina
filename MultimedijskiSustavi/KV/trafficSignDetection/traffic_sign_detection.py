@@ -4,7 +4,7 @@ refImagesPath="ref_images"
 selImagesPath="selected_images"
 
 #Odabir algoritma, 1 za ORB, 2 za SIFT
-selectedAlgorithm=1
+selectedAlgorithm=2
 counter=0
 
 selectedImages=[]
@@ -58,12 +58,12 @@ for selectedImage in selectedImages:
            print("Prepoznat je znak: " + classNames[id])
        else:
             print("Znak nije prepoznat ili ne postoji u bazi podataka!")
-            id=len(refImages)
             
-    if selectedImagesNames[counter] in classNames:
+    if id != -1:
         arr[classNames.index(selectedImagesNames[counter])][id]+=1
     else:
-        arr[len(refImages)][id]+=1
+        arr[classNames.index(selectedImagesNames[counter])][len(refImages)]+=1
+        
     print(selectedImagesNames[counter])
     counter+=1
         
@@ -71,7 +71,8 @@ for selectedImage in selectedImages:
     #cv2.waitKey(200)
     #cv2.destroyAllWindows()
 numberOfCorrectlyDetectedSigns=0
+classNames.append('random')
 for i in range(len(arr)):
     numberOfCorrectlyDetectedSigns+=arr[i][i]
-print(arr)
+    print(classNames[i] +" "+str(arr[i]))
 print("Number of correctly detected signs is: " + str(numberOfCorrectlyDetectedSigns) + " out of : " + str(len(selectedImages)) +" signs.")
