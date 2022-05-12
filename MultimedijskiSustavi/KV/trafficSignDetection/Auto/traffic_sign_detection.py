@@ -46,28 +46,36 @@ for selectedImage in selectedImages:
     #Crvena boja
     rMask = redMask(hsvImg)
     
-    imgRoiRed = getContours(rMask,selectedImage.copy())
+    imgRoiRed, shape  = getContours(rMask,selectedImage.copy())
     
     id = findID(imgRoiRed, desList, selectedAlgorithm)
     
     if id != -1:
         print("Prepoznat je znak: " + classNames[id])
+    elif shape !=-1:
+        print("Znak je prepoznat ali ne postoji u bazi podataka!")
         
     else:
     #Plava boja
        bMask = blueMask(hsvImg)
-       imgRoiBlue = getContours(bMask,selectedImage.copy())
+       imgRoiBlue, shape = getContours(bMask,selectedImage.copy())
        id = findID(imgRoiBlue, desList, selectedAlgorithm)
        if id != -1:
            print("Prepoznat je znak: " + classNames[id])
+       elif shape !=-1:
+           print("Znak je prepoznat ali ne postoji u bazi podataka!")
        else:
             print("Znak nije prepoznat ili ne postoji u bazi podataka!")
             
     #Uvećavanje vrijednosti na odgovarajućim pozicijama u matrici konfuzije
-    if id != -1:
-        confusionMatrix[classNames.index(selectedImagesNames[counter])][id]+=1
+    if(selectedImagesNames[counter] in classNames):
+        id1=classNames.index(selectedImagesNames[counter])
     else:
-        confusionMatrix[classNames.index(selectedImagesNames[counter])][len(refImages)]+=1
+        id1=len(refImages)
+    if id != -1:
+        confusionMatrix[id1][id]+=1
+    else:
+        confusionMatrix[id1][len(refImages)]+=1
         
     counter+=1
         

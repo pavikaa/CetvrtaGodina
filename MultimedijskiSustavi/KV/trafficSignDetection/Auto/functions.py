@@ -10,11 +10,11 @@ orb = cv2.ORB_create()
 #Funkcija vraća crvenu masku iz predane slike
 def redMask(hsvImg):
     #Iznosi boja u HSV obliku
-    lowerRed1 = np.array([0, 70, 60])
-    upperRed1 = np.array([10, 255, 255])
+    lowerRed1 = np.array([125, 50, 30])
+    upperRed1 = np.array([180, 255, 255])
 
-    lowerRed2 = np.array([170, 70, 60])
-    upperRed2 = np.array([180, 255, 255])
+    lowerRed2 = np.array([0, 50, 50])
+    upperRed2 = np.array([10, 255, 255])
     
     redMask1 = cv2.inRange(hsvImg, lowerRed1, upperRed1)
     redMask2 = cv2.inRange(hsvImg, lowerRed2, upperRed2)
@@ -30,8 +30,8 @@ def redMask(hsvImg):
 
 #Funkcija vraća plavu masku iz predane slike
 def blueMask(hsvImg):
-    lowerBlue = np.array([100, 170, 0])
-    upperBlue = np.array([130, 255, 170])
+    lowerBlue = np.array([90, 170, 60])
+    upperBlue = np.array([125, 255, 255])
     
     mask = cv2.inRange(hsvImg, lowerBlue, upperBlue)
     
@@ -68,20 +68,20 @@ def getContours(mask,img):
         image_masked = cv2.bitwise_and(img, img, mask=mask)
         bckgnd_masked = cv2.bitwise_and(bckgnd, bckgnd, mask=mask_inv)
         result = cv2.add(image_masked, bckgnd_masked)
-        return result
+        return result, shape
     else:
-        return img.copy()
+        return img.copy(), shape
 
 def findDes(images,alg):
     desList=[]
     match alg:
         #ORB
-        case 1:
+        case 0:
             for img in images:
                 kp,des = orb.detectAndCompute(img,None)
                 desList.append(des)
         #SIFT
-        case 2:
+        case 1:
             for img in images:
                 kp,des = sift.detectAndCompute(img,None)
                 desList.append(des)
@@ -94,24 +94,25 @@ def findID(img, desList, alg):
     if img is None:
         return finalValue
     
-    thresh = 15
     matchList=[]
     match alg:
         #ORB
-        case 1:
+        case 0:
             bf = cv2.BFMatcher(normType=cv2.NORM_HAMMING, crossCheck=False)
             kp2, des2 = orb.detectAndCompute(img, None)
+            thresh=15
         #SIFT
-        case 2:
+        case 1:
             bf = cv2.BFMatcher(normType=cv2.NORM_L2, crossCheck=False)
             kp2, des2 = sift.detectAndCompute(img, None)
+            thresh = 20
     
     try:
         for des in desList:
             matches = bf.knnMatch(des, des2, k=2)
             good = []
             for m,n in matches:
-                if m.distance < 0.85*n.distance:
+                if m.distance < 0.75*n.distance:
                     good.append([m])
             matchList.append(len(good))
     except:
